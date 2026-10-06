@@ -28,7 +28,15 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          packages: ''
+
+      - name: Install required Android SDK components
+        shell: bash
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Build release APK
         run: |
@@ -74,7 +82,7 @@ jobs:
           set -euo pipefail
           APK=$(find app/build/outputs/apk/release -maxdepth 1 -name '*.apk' -type f | head -1)
           test -n "$APK"
-          if [ -n "${KEYSTORE_B64:-}" ]; then
+          if [ -n "${KEYSTORE_B64:-}" ] && [ -n "${KEYSTORE_PASSWORD:-}" ] && [ -n "${KEY_ALIAS:-}" ] && [ -n "${KEY_PASSWORD:-}" ]; then
             KS_PASS="$KEYSTORE_PASSWORD"
             ALIAS="$KEY_ALIAS"
             KEY_PASS="$KEY_PASSWORD"
